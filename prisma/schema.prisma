@@ -1,0 +1,55 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Choir Members table
+model ChoirMember {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String   @unique
+  password    String
+  voicePart   String   // e.g., Soprano, Alto, Tenor, Bass
+  role        String?  // e.g., Lead, Backup, Instrumentalist
+  joinedAt    DateTime @default(now())
+
+  // Relations
+  roles       Role[]
+}
+
+// Roles table (scheduling & assignments)
+model Role {
+  id            Int      @id @default(autoincrement())
+  date          DateTime
+  serviceType   String   // e.g., Sunday Service, Rehearsal
+  assignment    String   // e.g., Solo, Backup, Instrument, etc.
+  uniform       String?  // e.g., White top & blue skirt
+  notes         String?  // extra notes like “arrive 8am”
+  choirMemberId Int
+  choirMember   ChoirMember @relation(fields: [choirMemberId], references: [id])
+}
+
+// Songs table
+model Song {
+  id          Int      @id @default(autoincrement())
+  title       String
+  composer    String?
+  lyrics      String?
+  harmonyFile String?  // path to uploaded harmony mp3
+  category    String?  // e.g., Worship, Praise
+  date        DateTime @default(now())
+}
+
+// Admin uploads (songs, uniforms, roles)
+model AdminPost {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  fileUrl     String?
+  createdAt   DateTime @default(now())
+}
