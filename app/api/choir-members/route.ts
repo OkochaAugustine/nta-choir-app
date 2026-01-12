@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/app/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import ChoirMember from "@/models/ChoirMember";
 
 export async function GET() {

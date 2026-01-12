@@ -1,10 +1,18 @@
 // /app/api/chatbot/singers/route.ts
 import { NextResponse } from "next/server";
-import connectDB from "@/app/lib/mongodb";
-import mongoose from "mongoose";
+import { connectDB } from "@/lib/mongodb";
+import mongoose, { Document, Model } from "mongoose";
+
+// Define Singer document type
+interface SingerDoc extends Document {
+  name: string;
+  isSunday: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Define Singer schema
-const SingerSchema = new mongoose.Schema(
+const SingerSchema = new mongoose.Schema<SingerDoc>(
   {
     name: { type: String, required: true },
     isSunday: { type: Boolean, default: false },
@@ -13,15 +21,15 @@ const SingerSchema = new mongoose.Schema(
 );
 
 // Create model if it doesn't exist
-const Singer = mongoose.models.Singer || mongoose.model("Singer", SingerSchema);
+const Singer: Model<SingerDoc> = mongoose.models.Singer || mongoose.model<SingerDoc>("Singer", SingerSchema);
 
 export async function GET() {
   try {
-    // Connect to MongoDB using Mongoose
+    // Connect to MongoDB
     await connectDB();
 
     // Fetch Sunday singers
-    const sundaySingers = await Singer.find({ isSunday: true });
+    const sundaySingers = await Singer.find({ isSunday: true }).lean();
 
     if (!sundaySingers.length) {
       return NextResponse.json({ message: "No singers assigned for this Sunday yet." });

@@ -1,39 +1,36 @@
-import clientPromise from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
+
+// Schema
+const SingerSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    role: { type: String },
+    service: { type: String },
+  },
+  { timestamps: true }
+);
+
+// Model
+const SingerThisSunday =
+  mongoose.models.SingerThisSunday ||
+  mongoose.model("SingerThisSunday", SingerSchema);
 
 export async function GET() {
   try {
-    // Connect to MongoDB
-    const client = await clientPromise;
+    await connectDB();
 
-    // ✅ Use the correct database name from MongoDB Atlas
-    const db = client.db("LivingSpringVoices");
+    const singers = await SingerThisSunday.find().sort({ createdAt: 1 });
 
-    // 🧩 Log to verify connection and collections
-    console.log("📂 Connected to DB:", db.databaseName);
-    console.log("📄 Collections:", await db.listCollections().toArray());
-
-    // ✅ Use the correct collection name
-    const dutyRoster = db.collection("dutyroster");
-
-    // Fetch the most recent duty roster
-    const currentWeekRoster = await dutyRoster.findOne({}, { sort: { _id: -1 } });
-
-    if (!currentWeekRoster) {
-      return NextResponse.json({
-        message: "No duty roster has been uploaded for this week yet.",
-      });
+    if (!singers.length) {
+      return NextResponse.json({ message: "No singers assigned for this Sunday yet." });
     }
 
-    // Return the roster text
-    return NextResponse.json({
-      message: currentWeekRoster.text,
-    });
-  } catch (error) {
-    console.error("❌ Error fetching duty roster:", error);
-    return NextResponse.json(
-      { message: "Error fetching duty roster." },
-      { status: 500 }
-    );
+    return NextResponse.json({ singers });
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error("❌ Error fetching singers:", errMsg);
+    return NextResponse.json({ message: "Error fetching singers." }, { status: 500 });
   }
 }

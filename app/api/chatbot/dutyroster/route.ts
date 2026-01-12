@@ -1,37 +1,39 @@
 // app/api/dutyroster/route.ts
 import { NextResponse } from "next/server";
-import connectDB from "@/app/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import mongoose from "mongoose";
 
-// Define a simple schema for dutyRoster
+// ✅ Schema for DutyRoster
 const DutyRosterSchema = new mongoose.Schema(
   { text: { type: String, required: true } },
   { timestamps: true }
 );
 
-// Create model if it doesn't exist
+// ✅ Model
 const DutyRoster =
   mongoose.models.DutyRoster || mongoose.model("DutyRoster", DutyRosterSchema);
 
 export async function GET() {
   try {
-    // Connect to MongoDB using Mongoose
+    // Connect to MongoDB
     await connectDB();
 
     // Fetch the most recent roster
     const currentWeekRoster = await DutyRoster.findOne().sort({ createdAt: -1 });
 
-    if (currentWeekRoster && currentWeekRoster.text) {
+    if (currentWeekRoster?.text) {
       console.log("✅ Duty roster loaded from MongoDB");
       return NextResponse.json({ message: currentWeekRoster.text });
     }
 
     console.warn("⚠ No roster found in database — using fallback text.");
-  } catch (error) {
-    console.error("❌ Error connecting to MongoDB — using fallback text:", error);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    console.error("❌ Error fetching duty roster:", errorMessage);
   }
 
-  // Fallback static duty roster
+  // Fallback static duty roster if DB fails or empty
   const dutyRosterText = `
 Greetings, family,
 

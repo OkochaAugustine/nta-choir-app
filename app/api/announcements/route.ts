@@ -1,16 +1,18 @@
-// models/Announcement.ts
-import mongoose, { Schema, models } from "mongoose";
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/connectDB";
+import Announcement from "@/models/Announcement";
 
-const AnnouncementSchema = new Schema(
-  {
-    title: { type: String, required: true },
-    content: { type: String, required: true },
-    postedBy: { type: String, default: "Admin" },
-  },
-  { timestamps: true }
-);
-
-const Announcement =
-  models.Announcement || mongoose.model("Announcement", AnnouncementSchema);
-
-export default Announcement;
+export async function GET() {
+  try {
+    await connectDB();
+    const announcements = await Announcement.find().sort({
+      createdAt: -1,
+    });
+    return NextResponse.json(announcements);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch announcements" },
+      { status: 500 }
+    );
+  }
+}

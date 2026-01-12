@@ -1,6 +1,6 @@
 // /app/api/chatbot/uniform/route.ts
 import { NextResponse } from "next/server";
-import connectDB from "@/app/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import mongoose from "mongoose";
 
 // --- Define Uniform Schema ---

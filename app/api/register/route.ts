@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import { connectDB } from "@/app/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 
 // Schema
 const ChoirMemberSchema = new mongoose.Schema(
